@@ -1,0 +1,65 @@
+ELASTIC SEARCH
+
+NOTE : 
+∘ INI HANYA SUMMARY YANG SAYA AMBIL  DARI VIDEO BERSERI 'BELAJAR ELASTICSEARCH YANG ADA DI CHANNEL 'PROGRAMMER ZAMAN NOW'
+∘ DISARANKAN UNTUK MELIHAT LANGSUNG VIDEO NYA AGAR DAPAT COMPLETE EXPLANATION NYA | KARENA SAYA MUNGKIN BISA SAJA SALAH AMBIL SUMMARY DARI SOURCE ASLINYA  :)
+∘ INI SAYA BUAT HANYA UNTUK RECAPING  SAJA KALAU SEANDAINYA SAYA LUPA MEKANISME DARI ELASTICSEARCH :)
+ -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+• Satu aplikasi elasticsearch yg kita jalankan itu artinya kita menjalankan satu buah node
+• Di productions >= 3  node | total atau running biasanya dalam jumlah ganjil = 3 , 5,  7, 9 , (2n - 1)
+•  Node yang kerja bareng => Cluster | biasanya di productions instal 1 cluster untuk 1 data center , dalam 1 cluster biasanya terdiri dari beberapa node dan saling berkolaborasi
+• Tiap node => masterless => nggak ada master, kita bisa query data ke node manapun karena saling integrate
+• Saat kita membuat sebuah index di elasaticsearch maka itu akan di simpan / masuk ke dalam lucune document
+• dalam lucune document isinya terdiri dari attribute dan value (mirip seperti struktur table)
+• Type akan dianggap sebuah table = person, product, customer || status = enum, boolean, integer (SESAT)
+• Lucune doc tidak bisa membuat suatu document dengan multiple tipe data
+• Dalam elasticsearch nggak ada namanya database (BENAR) analogi database dalam elastic disebut table
+• Saat bikin table artinya kita bikin satu index elasticsearch
+∘ Jika ada aplikasi A biasanya mas eko membuat nama index nya => A_customer , aplikasi B => b_cutomer
+∘ saat kita bikin index customer,person,product itu sama artinya kita membuat table product,customer,dll
+• Elastichsearch sharding => memotong index menjadi beberapa shard / partisi / bagian
+• Default => saat kita membuat index = elastic akan membuat 5 shard / partisi
+• Misal buat index product = nanti akan dipotong 5
+• Kenapa dipotong = jika dipotong nanti akan mudah untuk di distribusikan ke beberapa node elasticsearch
+• MIsal kita install 3 node, dan 5 index product siap di dist ke beberapa node secara rand / acak, biar kagak numpuk di satu node dan kagak berat :)
+• Misal kejadian node 2 mati => beberapa partisi akan hilang yg ada di node yg mati tersebut
+• Kalau kejadian seperti itu = biasanya elasticsearch tidak mau menerima data lagi
+• Kita masih bisa query ke beberapa partisi yg masih hidup meskipun semua data nya gak keluar,  karna pastisi lain udah hangus / hilang 
+• Elasticseacrh Replication / menduplikasi data atau index  = saat kita membuat 1 index maka elastic search akan membuat  sebuah replikasi (Default) 
+• Misal kita buat sebuah index terus di kita sharding jadi 3 buah, misal kita running 2 node , index sharding dengan 1 replication makan setiap index yg  kita sharding dapat masing-masing sebuah replikasi, oleh karena itu kita harus menyiapkan dua kali lipat space hardisk dari data yg kita miliki
+• Pintarnya elasticsearch dia tidak menyimpan replikasi suatu data di node yg sama dengan data tersebut. index asli biasanya kita panggil dengan index master, sedangkan replikasi kita sebut index replikasi
+• Misal kita tambah node nanti secara pintar lagi, data-data akan didistrbusikan lagi ke node dan data & replikasi tetap tidak di node yg sama
+•  misal node 2 mati = otomatis data dalam node 2 hilang. but replikasi nya masih ada di node yg lain
+• Nah sebuah data yg tersisa di node lain, yg master misalnya / replikasi nya mati di node yg hangus tadi. maka secara pintar data yg tinggal satu itu akan di replikasi lagi sebanyak satu buah yg tesebar rand di masing-masing node yg tersedia
+• Document routing = misal kita save doc / data baru, kita bkin misal 5 partisi, quest? masu di save dimana lokasi doc itu harus di save?
+• pengalokasian data yg spread di tiap node itu TIDAK RANDOM!!! (kalau ada kata rand / random / acak di summary yg saya buat diatas, maafkan ye haha :) 
+• kalau random artinya kita harus nyari di semua partisi pas di get
+• Untuk melakukan nya, elasticsearch menggunakan hashing, hasil hashing(id) di modulo(%) sebanyak partisi / shard nya (number of primary shard)
+• nama algoritma routing nya = murmurhash (id) 
+• Di elastic id tidak bisa dirubah
+• Distributed Document : prosedur lengkap nya lihat aja video nya ya di channel Programmer Zaman Now bagian - 8 seri elastic search 
+• Immutable elasticseacrh = document yg ada di elastic search di save secara immutable dalam disk, imposible ever change forever haha :)
+• Benefit : tidak perlu ada locking data (proses bersamaan ketika akses / mengubah data) 
+• Sebenarnya data yg kita upload/save ke elasticsearch  itu tidak akan bisa dirubah lagi, pertanyaan nya kenapa kita bisa lakukan delete and update?
+• Itu hanyalah akal-akalan saja, karena mecanism  yg bekerja di belakang layar yaitu stiap index memili file .del yg berisi daftar doc yg dihapus
+• Ketika kita delete itu sebenarnya gk didelete sama sekale tapi hanya di tag sebagai file delete di dalam .del nya, gak didelete sama sekali (soft delete)
+• proses update, elastic ini dia sebenrnya doc lama tag as deleted di dalam file .del nya , perubahanya di save as new document.
+• Takut space bengkak ? tenang aja, di elastic search sebenarnya punya schedule untuk cleaning up nya :) but not direct seelah update yaa, ada waktu nya yg telah di tetapkan hehe
+• Distributed searching => tahapan nya lumayan kompleks LIHAT AJA DEH VIDEO ASLINYA di channel  'programmer jaman now'
+• INSTALASI ELASTIC SEARCH
+∘ single node
+∘ buka www.elastic.co dan download elasticsearch
+∘ pilih sesuai sistim operasi
+∘ then ekstrak / install (agak gede sih) karena include java didalamnya
+• kita utak/atik confignya dulu. buka folder yg sudah di ekstrak kemudian buka foolder config pake teks editor(whatever)
+• buka elasicsearch.yml, edit :
+∘ cluster.name : whatevermaybeyourname
+∘ node.name : node -1
+∘ penjelasan another config lebih rinci cek channel 'Programmer Zaman Now'
+• run, buka di terminal masuk ke dir nya, ketika perintah = ./bin/elasticsearch
+• kalau udah running, cek di browser dengan port default nya 9200
+• Done.
+
+•  Praktek 3 node
+• Configurasinya  silahkan lihat video nya di channel "programmer zaman now" karena saya mles summary hahaha
+•  
